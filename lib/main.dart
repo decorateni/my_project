@@ -35,7 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _handleInput() {
     setState(() {
-      if (_inputText == 'nolik') {
+      if (_inputText == 'Avada kedavra') {
         _counter = 0;
       } else {
         int? value = int.tryParse(_inputText);
@@ -64,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: TextField(
                 onChanged: (text) => _inputText = text,
                 decoration: const InputDecoration(
-                  labelText: 'Enter a number or "nolik"',
+                  labelText: 'Enter a number or "Avada kedavra"',
                 ),
               ),
             ),
