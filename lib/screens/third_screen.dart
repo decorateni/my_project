@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_project/styles.dart';
 
 class ThirdScreen extends StatefulWidget {
   const ThirdScreen({Key? key}) : super(key: key);
@@ -19,12 +20,12 @@ class _ThirdScreenState extends State<ThirdScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Error'),
-          content: const Text('Please enter valid data.'),
+          title: Text('Error', style: pinkBoldTextStyle(18)),
+          content: Text('Please enter valid data.', style: pinkBoldTextStyle(16)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
+              child: Text('OK', style: pinkBoldTextStyle(16)),
             ),
           ],
         ),
@@ -33,12 +34,12 @@ class _ThirdScreenState extends State<ThirdScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Submitted Data'),
-          content: Text('Name: $name\nEmail: $email'),
+          title: Text('Submitted Data', style: pinkBoldTextStyle(18)),
+          content: Text('Name: $name\nEmail: $email', style: pinkBoldTextStyle(16)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
+              child: Text('OK', style: pinkBoldTextStyle(16)),
             ),
           ],
         ),
@@ -48,9 +49,11 @@ class _ThirdScreenState extends State<ThirdScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Third Screen'),
+        title: Text('Third Screen', style: pinkBoldTextStyle(screenWidth * 0.06)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -59,16 +62,23 @@ class _ThirdScreenState extends State<ThirdScreen> {
             children: [
               TextFormField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
+                decoration: InputDecoration(
+                  labelText: 'Name',
+                  labelStyle: pinkBoldTextStyle(screenWidth * 0.045),
+                ),
               ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  labelStyle: pinkBoldTextStyle(screenWidth * 0.045),
+                ),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _submitData,
-                child: const Text('Submit'),
+                child: Text('Submit', style: pinkBoldTextStyle(screenWidth * 0.05)),
               ),
             ],
           ),
