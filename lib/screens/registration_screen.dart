@@ -1,56 +1,65 @@
 import 'package:flutter/material.dart';
-import 'package:my_project/styles.dart'; // стилі для рожевого тексту
+import '../repository/shared_prefs_user_repository.dart';
 
 class RegistrationScreen extends StatelessWidget {
-  const RegistrationScreen({super.key}); // конструктор
+  final SharedPrefsUserRepository userRepository;
+  final VoidCallback onRegisterSuccess;
+
+  RegistrationScreen({
+    required this.userRepository,
+    required this.onRegisterSuccess,
+    Key? key,
+  }) : super(key: key);
+
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width; // ширина екрану
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Registration', // заголовок екрану
-          style: pinkBoldTextStyle(screenWidth * 0.06), // рожевий жирний стиль
-        ),
-      ),
+      appBar: AppBar(title: const Text('Register')),
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center, // центруємо все
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
-              decoration: InputDecoration(
-                labelText: 'Email', // поле для email
-                labelStyle: pinkBoldTextStyle(screenWidth * 0.045),
+              controller: emailController,
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: screenWidth * 0.05),
+            const SizedBox(height: 16),
             TextField(
-              decoration: InputDecoration(
-                labelText: 'Password', // поле для пароля
-                labelStyle: pinkBoldTextStyle(screenWidth * 0.045),
-              ),
-              obscureText: true, // приховано
-            ),
-            SizedBox(height: screenWidth * 0.05),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Confirm Password', // підтвердження пароля
-                labelStyle: pinkBoldTextStyle(screenWidth * 0.045),
+              controller: passwordController,
+              decoration: const InputDecoration(
+                labelText: 'Password',
+                border: OutlineInputBorder(),
               ),
               obscureText: true,
             ),
-            SizedBox(height: screenWidth * 0.1),
+            const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/home'); // переходимо на головну
+              onPressed: () async {
+                final email = emailController.text.trim();
+                final password = passwordController.text.trim();
+
+                if (email.isNotEmpty &&
+                    password.isNotEmpty &&
+                    email.contains('@') &&
+                    password.length >= 8) {
+                  await userRepository.saveUserData(email, password);
+                  onRegisterSuccess();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text(
+                            'Please enter a valid email and password (8+ characters)')),
+                  );
+                }
               },
-              child: Text(
-                'Register', // кнопка для реєстрації
-                style: pinkBoldTextStyle(screenWidth * 0.05), // стиль кнопки
-              ),
+              child: const Text('Register'),
             ),
           ],
         ),
