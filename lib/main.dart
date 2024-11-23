@@ -1,30 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:my_project/screens/home_screen.dart';
-import 'package:my_project/screens/login_screen.dart';
-import 'package:my_project/screens/profile_screen.dart';
-import 'package:my_project/screens/registration_screen.dart';
+import 'repository/shared_prefs_user_repository.dart';
+import 'screens/home_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/registration_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final SharedPrefsUserRepository userRepository = SharedPrefsUserRepository();
+
+  MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        primarySwatch: Colors.blue,
       ),
-      initialRoute: '/login',
+      initialRoute: '/',
       routes: {
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegistrationScreen(),
-        '/profile': (context) => const ProfileScreen(),
-        '/home': (context) => const HomeScreen(),
+        '/': (context) => LoginScreen(userRepository: userRepository),
+        '/register': (context) => RegistrationScreen(
+          userRepository: userRepository,
+          onRegisterSuccess: () {
+            Navigator.pushReplacementNamed(context, '/');
+          },
+        ),
+        '/home': (context) => HomeScreen(userRepository: userRepository),
+        '/profile': (context) => ProfileScreen(
+          userRepository: userRepository,
+          onDeleteAccount: () async {
+            await userRepository.clearUserData();
+            Navigator.pushReplacementNamed(context, '/');
+          },
+          onEditEmail: (newEmail) async {
+            await userRepository.updateEmail(newEmail);
+            Navigator.pop(context);
+          },
+        ),
       },
     );
   }

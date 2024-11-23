@@ -1,57 +1,61 @@
 import 'package:flutter/material.dart';
-import 'package:my_project/styles.dart';
+import 'package:my_project/repository/user_repository.dart';
 
 class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key}); // конструктор з ключем
+  final UserRepository userRepository;
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  LoginScreen({Key? key, required this.userRepository}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width; // ширина екрану
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Login', // заголовок екрану
-          style: pinkBoldTextStyle(screenWidth * 0.06), // стиль тексту
-        ),
-      ),
+      appBar: AppBar(title: Text('Login')),
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center, // центруємо контент
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
+              controller: emailController,
               decoration: InputDecoration(
-                labelText: 'Email', // підказка для email
-                labelStyle: pinkBoldTextStyle(screenWidth * 0.045),
+                labelText: 'Email',
+                border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: screenWidth * 0.05), // відступ між полями
+            SizedBox(height: 16),
             TextField(
+              controller: passwordController,
               decoration: InputDecoration(
-                labelText: 'Password', // підказка для пароля
-                labelStyle: pinkBoldTextStyle(screenWidth * 0.045),
+                labelText: 'Password',
+                border: OutlineInputBorder(),
               ),
-              obscureText: true, // приховуємо пароль
+              obscureText: true,
             ),
-            SizedBox(height: screenWidth * 0.1), // великий відступ
+            SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/home'); // на головну
+              onPressed: () async {
+                final userData = await userRepository.getUserData();
+                if (emailController.text == userData['email'] &&
+                    passwordController.text == userData['password']) {
+                  Navigator.pushReplacementNamed(context, '/home');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Login successful!')),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Invalid email or password')),
+                  );
+                }
               },
-              child: Text(
-                'Login', // текст кнопки
-                style: pinkBoldTextStyle(screenWidth * 0.05),
-              ),
+              child: Text('Login'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/register'); // перехід на реєстрацію
+                Navigator.pushNamed(context, '/register');
               },
-              child: Text(
-                "Don't have an account? Register", // текст підказки
-                style: pinkBoldTextStyle(screenWidth * 0.04),
-              ),
+              child: Text('Don’t have an account? Register here'),
             ),
           ],
         ),

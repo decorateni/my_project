@@ -1,40 +1,63 @@
 import 'package:flutter/material.dart';
-import 'package:my_project/styles.dart'; // стилі для тексту
+import '../repository/shared_prefs_user_repository.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key}); // конструктор з ключем
+class HomeScreen extends StatefulWidget {
+  final SharedPrefsUserRepository userRepository;
+
+  const HomeScreen({
+    required this.userRepository,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String email = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final userData = await widget.userRepository.getUserData();
+    setState(() {
+      email = userData['email'] ?? 'No email found';
+    });
+  }
+
+  Future<void> _logout() async {
+    await widget.userRepository.clearUserData();
+    Navigator.pushReplacementNamed(context, '/');
+  }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width; // ширина екрана
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Home', // заголовок екрану
-          style: pinkBoldTextStyle(screenWidth * 0.06), // рожевий жирний стиль
-        ),
+        title: const Text('Home'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await _logout();
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.account_circle),
+            onPressed: () async {
+              await Navigator.pushNamed(context, '/profile');
+              // Після повернення з профілю оновлюємо дані
+              await _loadUserData();
+            },
+          ),
+        ],
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center, // центруємо все
-          children: [
-            Text(
-              'Welcome to the App', // привітання
-              style: pinkBoldTextStyle(screenWidth * 0.06), // стиль тексту
-            ),
-            SizedBox(height: screenWidth * 0.1), // відступ
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/profile'); // на профіль
-              },
-              child: Text(
-                'Go to Profile', // текст на кнопці
-                style: pinkBoldTextStyle(screenWidth * 0.05), // стиль кнопки
-              ),
-            ),
-          ],
-        ),
+        child: Text('Email: $email'),
       ),
     );
   }
