@@ -14,6 +14,25 @@ class RegistrationScreen extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  Future<void> _showDialog(BuildContext context, String message) async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,13 +69,12 @@ class RegistrationScreen extends StatelessWidget {
                     email.contains('@') &&
                     password.length >= 8) {
                   await userRepository.saveUserData(email, password);
+                  await _showDialog(context, 'Registration successful!');
                   onRegisterSuccess();
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text(
-                            'Please enter a valid email and password (8+ characters)')),
-                  );
+                  await _showDialog(
+                      context,
+                      'Please enter a valid email and password (8+ characters).');
                 }
               },
               child: const Text('Register'),
