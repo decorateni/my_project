@@ -14,11 +14,29 @@ class ProfileScreen extends StatelessWidget {
   }) : super(key: key);
 
   bool _isValidEmail(String email) {
-    // Валідація імейлу через регулярний вираз
     final emailRegex = RegExp(
       r'^[a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
     );
     return emailRegex.hasMatch(email);
+  }
+
+  Future<void> _showDialog(BuildContext context, String message) async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -45,20 +63,13 @@ class ProfileScreen extends StatelessWidget {
                 if (_isValidEmail(newEmail)) {
                   try {
                     await onEditEmail(newEmail);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Email updated to $newEmail')),
-                    );
+                    await _showDialog(context, 'Email updated to $newEmail');
                   } catch (error) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Failed to update email. Try again.'),
-                      ),
-                    );
+                    await _showDialog(
+                        context, 'Failed to update email. Try again.');
                   }
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please enter a valid email')),
-                  );
+                  await _showDialog(context, 'Please enter a valid email.');
                 }
               },
               child: const Text('Update Email'),
@@ -68,18 +79,11 @@ class ProfileScreen extends StatelessWidget {
               onPressed: () async {
                 try {
                   await onDeleteAccount();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Account deleted successfully'),
-                    ),
-                  );
+                  await _showDialog(context, 'Account deleted successfully');
                   Navigator.pushReplacementNamed(context, '/');
                 } catch (error) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Failed to delete account. Try again.'),
-                    ),
-                  );
+                  await _showDialog(
+                      context, 'Failed to delete account. Try again.');
                 }
               },
               child: const Text('Delete Account'),
