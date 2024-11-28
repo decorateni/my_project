@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import '../repository/shared_prefs_user_repository.dart';
+import '../services/api_service.dart';
+import '../models/movie.dart';
 
 class HomeScreen extends StatefulWidget {
   final SharedPrefsUserRepository userRepository;
@@ -15,84 +16,22 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String email = '';
+  late Future<List<Movie>> popularMovies;
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
-    _monitorConnectivity();
+    popularMovies = fetchMovies();
   }
 
-  Future<void> _loadUserData() async {
-    final userData = await widget.userRepository.getUserData();
-    setState(() {
-      email = userData['email'] ?? 'No email found';
-    });
-  }
+  Future<List<Movie>> fetchMovies() async {
+    final apiService = ApiService();
+    final moviesData = await apiService.fetchPopularMovies();
 
-  void _monitorConnectivity() {
-    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-      if (result == ConnectivityResult.none) {
-        _showDialog('No internet connection. Limited functionality.');
-      }
-    });
-  }
-
-  Future<void> _logout() async {
-    final confirmed = await _confirmLogout();
-    if (confirmed) {
-      await widget.userRepository.clearUserData();
-      Navigator.pushReplacementNamed(context, '/');
-    }
-  }
-
-  Future<void> _showDialog(String message) async {
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: Text(message),
-          actions: [
-            TextButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<bool> _confirmLogout() async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Log out'),
-          content: Text('Are you sure you want to log out?'),
-          actions: [
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-            ),
-            TextButton(
-              child: Text('Log out'),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-            ),
-          ],
-        );
-      },
-    );
-
-    // Переконаємось, що значення не null, і якщо воно null, повернемо false
-    return result ?? false;
+    // Явно приводимо кожен елемент до типу Map<String, dynamic>
+    return moviesData
+        .map((movie) => Movie.fromJson(movie as Map<String, dynamic>))
+        .toList();
   }
 
 
@@ -104,19 +43,43 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: _logout,
-          ),
-          IconButton(
-            icon: const Icon(Icons.account_circle),
             onPressed: () async {
-              await Navigator.pushNamed(context, '/profile');
-              await _loadUserData();
+              await widget.userRepository.clearUserData();
+              Navigator.pushReplacementNamed(context, '/');
             },
           ),
         ],
       ),
-      body: Center(
-        child: Text('Email: $email'),
+      body: FutureBuilder<List<Movie>>(
+        future: popularMovies,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Failed to load movies: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No movies available.'));
+          }
+
+          final movies = snapshot.data!;
+          return ListView.builder(
+            itemCount: movies.length,
+            itemBuilder: (context, index) {
+              final movie = movies[index];
+              return ListTile(
+                leading: movie.posterPath != null
+                    ? Image.network(
+                  'https://image.tmdb.org/t/p/w500${movie.posterPath}',
+                  width: 50,
+                  fit: BoxFit.cover,
+                )
+                    : const Icon(Icons.movie),
+                title: Text(movie.title),
+                subtitle: Text('Rating: ${movie.voteAverage}'),
+              );
+            },
+          );
+        },
       ),
     );
   }
