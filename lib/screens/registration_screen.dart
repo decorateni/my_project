@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
-import '../repository/shared_prefs_user_repository.dart';
+import 'package:provider/provider.dart';
+import '../state/user_state.dart';
 
 class RegistrationScreen extends StatelessWidget {
-  final SharedPrefsUserRepository userRepository;
   final VoidCallback onRegisterSuccess;
 
-  RegistrationScreen({
-    required this.userRepository,
-    required this.onRegisterSuccess,
-    Key? key,
-  }) : super(key: key);
+  RegistrationScreen({required this.onRegisterSuccess, Key? key}) : super(key: key);
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -68,13 +64,12 @@ class RegistrationScreen extends StatelessWidget {
                     password.isNotEmpty &&
                     email.contains('@') &&
                     password.length >= 8) {
-                  await userRepository.saveUserData(email, password);
+                  await context.read<UserState>().saveUserData(email, password);
                   await _showDialog(context, 'Registration successful!');
                   onRegisterSuccess();
                 } else {
                   await _showDialog(
-                      context,
-                      'Please enter a valid email and password (8+ characters).');
+                      context, 'Please enter a valid email and password (8+ characters).');
                 }
               },
               child: const Text('Register'),
