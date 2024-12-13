@@ -19,7 +19,7 @@ class HomeScreen extends StatelessWidget {
               Navigator.pushReplacementNamed(context, '/');
             },
           ),
-        ],
+        ],git commit -m "2"
       ),
       body: movieState.isLoading
           ? const Center(child: CircularProgressIndicator()) // Стан завантаження
