@@ -7,6 +7,9 @@ class SharedPrefsUserRepository extends UserRepository {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('email', email);
     await prefs.setString('password', password);
+
+    // Debugging
+    print('Saved email: $email, password: $password');
   }
 
   @override
@@ -14,6 +17,10 @@ class SharedPrefsUserRepository extends UserRepository {
     final prefs = await SharedPreferences.getInstance();
     final email = prefs.getString('email');
     final password = prefs.getString('password');
+
+    // Debugging
+    print('Retrieved email: $email, password: $password');
+
     return {'email': email, 'password': password};
   }
 
